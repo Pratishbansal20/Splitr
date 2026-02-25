@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const api = axios.create({
-  baseURL: 'https://splitr-2g63.onrender.com/',
+  baseURL: 'https://splitr-2g63.onrender.com/api',
   withCredentials: false,
 });
 
