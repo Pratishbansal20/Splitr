@@ -112,12 +112,7 @@ function GroupDetails() {
 
   const balances = calculateBalances();
 
-  const handleSettleUp = async () => {
-    // Simple Settle Up: "I (CurrentUser) pay SelectedUser Amount"
-    // For MVP, we'll just quickly reuse the existing form logic or add a dedicated small form?
-    // Let's add a "Settlement Mode" toggle to the form.
-  };
-
+  // Removed unused handleSettleUp
 
   useEffect(() => {
     fetchGroup();

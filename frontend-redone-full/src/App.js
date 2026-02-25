@@ -1,7 +1,7 @@
 import React from "react";
 import { BrowserRouter as Router, Routes, Route, Navigate, useLocation, Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Home, Users, Heart, Activity, LogOut } from "lucide-react";
+import { Home, Heart, Activity } from "lucide-react";
 import GroupList from "./components/GroupList";
 import LoginForm from "./components/LoginForm";
 import RegisterForm from "./components/RegisterForm";

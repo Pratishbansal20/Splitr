@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import { UserPlus, User, Wallet } from 'lucide-react';
+import { UserPlus, User } from 'lucide-react';
 import api from '../api';
 import AddFriendModal from './AddFriendModal';
 
