@@ -2,9 +2,10 @@ const express = require('express');
 const mongoose = require('mongoose');
 const Group = require('../models/Group');
 const User = require('../models/User');
+const auth = require('../middleware/authMiddleware'); // Import auth middleware
 const router = express.Router();
 
-router.post('/create', async (req, res) => {
+router.post('/create', auth, async (req, res) => {
   const { name, members } = req.body;
 
   // Validation
@@ -29,8 +30,11 @@ router.post('/create', async (req, res) => {
       return res.status(404).json({ error: "One or more users not found" });
     }
 
+    // Ensure creator is a member
+    const uniqueMembers = [...new Set([...members, req.user.id])];
+
     // Create group
-    const group = new Group({ name, members });
+    const group = new Group({ name, members: uniqueMembers });
     await group.save();
     res.status(201).json(group);
   } catch (error) {
@@ -38,29 +42,100 @@ router.post('/create', async (req, res) => {
   }
 });
 
-router.get('/', async (req, res) => {
+const Expense = require('../models/Expense'); // Import Expense
+
+router.get('/', auth, async (req, res) => {
   try {
-    const groups = await Group.find().populate('members', 'name email');
-    res.json(groups);
+    const userId = req.user.id;
+    // Find groups where user is a member
+    const groups = await Group.find({ members: userId }).populate('members', 'name email');
+
+    // Calculate balance for each group
+    const groupsWithBalance = await Promise.all(groups.map(async (group) => {
+      const expenses = await Expense.find({ group: group._id });
+      let myBalance = 0;
+      const balanceMap = {}; // userId -> amount (positive = they owe me)
+
+      expenses.forEach(exp => {
+        const payerId = exp.paidBy.toString();
+
+        // Calculate Member-to-Member Balances (Who owes whom)
+        if (payerId === userId) {
+          // I paid. Others owe me their share.
+          exp.split.forEach(s => {
+            if (s.user.toString() !== userId) {
+              balanceMap[s.user.toString()] = (balanceMap[s.user.toString()] || 0) + s.share;
+            }
+          });
+        } else {
+          // Someone else paid. If I'm in the split, I owe them (reduce my "credit" with them).
+          const mySplit = exp.split.find(s => s.user.toString() === userId);
+          if (mySplit) {
+            balanceMap[payerId] = (balanceMap[payerId] || 0) - mySplit.share;
+          }
+        }
+
+        // Calculate My Net Balance (What I get back vs what I owe in total)
+        // Formula: (Amount I Paid) - (My Share of Expense)
+        if (payerId === userId) {
+          myBalance += exp.amount;
+        }
+
+        const mySplit = exp.split.find(s => s.user.toString() === userId);
+        if (mySplit) {
+          myBalance -= mySplit.share;
+        }
+      });
+
+      // Format balanceMap to details
+      const memberDetails = group.members
+        .filter(m => m._id.toString() !== userId)
+        .map(m => ({
+          id: m._id,
+          name: m.name,
+          amount: balanceMap[m._id.toString()] || 0
+        }));
+
+      return { ...group.toObject(), myBalance, memberDetails };
+    }));
+
+    res.json(groupsWithBalance);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
 });
 
-// Get a single group by ID
-router.get('/:groupId', async (req, res) => {
-  const { groupId } = req.params;
-
-  // Validate ObjectId
-  if (!mongoose.Types.ObjectId.isValid(groupId)) {
-    return res.status(400).json({ error: "Invalid group ID" });
-  }
-
+// Get group details
+router.get('/:id', auth, async (req, res) => {
   try {
-    const group = await Group.findById(groupId).populate('members', 'name email');
-    if (!group) {
-      return res.status(404).json({ error: "Group not found" });
+    if (req.params.id === 'nongroup') {
+      const user = await User.findById(req.user.id).populate('friends', 'name email');
+      return res.json({
+        _id: 'nongroup',
+        name: 'Non-Group Expenses',
+        members: user.friends, // Use friends as members for selection
+        isVirtual: true
+      });
     }
+
+    const { id } = req.params;
+
+    // Validate ObjectId
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({ error: "Invalid group ID" });
+    }
+
+    const group = await Group.findById(id)
+      .populate('members', 'name email')
+      .populate('expenses');
+
+    if (!group) return res.status(404).json({ error: "Group not found" });
+
+    // Check if user is member
+    if (!group.members.some(m => m._id.toString() === req.user.id)) {
+      return res.status(403).json({ error: "Not a member" });
+    }
+
     res.json(group);
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -69,7 +144,7 @@ router.get('/:groupId', async (req, res) => {
 
 
 // Update group name or members
-router.put('/:id', async (req, res) => {
+router.put('/:id', auth, async (req, res) => {
   const groupId = req.params.id;
   const { name, members } = req.body;
 
@@ -82,7 +157,7 @@ router.put('/:id', async (req, res) => {
   if (members && (!Array.isArray(members) || !members.every(id => mongoose.Types.ObjectId.isValid(id)))) {
     return res.status(400).json({ error: "Invalid member ID(s)" });
   }
-  
+
 
 
   try {
@@ -101,7 +176,7 @@ router.put('/:id', async (req, res) => {
 });
 
 // Delete a group
-router.delete('/:id', async (req, res) => {
+router.delete('/:id', auth, async (req, res) => {
   const groupId = req.params.id;
 
   if (!mongoose.Types.ObjectId.isValid(groupId)) {

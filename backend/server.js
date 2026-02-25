@@ -30,12 +30,13 @@ app.use('/api/expense', expenseRoutes);
 const groupRoutes = require('./routes/group');
 app.use('/api/group', groupRoutes);
 
+app.use('/api/friends', require('./routes/friends'));
 
 
 // MongoDB Connection
 mongoose.connect(process.env.MONGO_URI)
-.then(() => console.log('MongoDB Connected'))
-.catch((err) => console.error('MongoDB connection error:', err));
+  .then(() => console.log('MongoDB Connected'))
+  .catch((err) => console.error('MongoDB connection error:', err));
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`Server started on port ${PORT}`));

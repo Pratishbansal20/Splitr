@@ -1,5 +1,6 @@
 const express = require('express');
 const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
 const router = express.Router();
 const User = require('../models/User');
 
@@ -28,19 +29,39 @@ router.post('/register', async (req, res) => {
     const hashedPassword = await bcrypt.hash(password, salt);
 
     // Create user
-    const user = new User({ 
-      name, 
-      email, 
+    const user = new User({
+      name,
+      email,
       password: hashedPassword  // Store hashed password
     });
 
     await user.save();
-    res.status(201).json({
-      message: 'User registered successfully!',
-      user: { id: user._id, name: user.name, email: user.email }
-    });
+
+    // Create payload
+    const payload = {
+      user: {
+        id: user.id
+      }
+    };
+
+    // Sign Token
+    jwt.sign(
+      payload,
+      process.env.JWT_SECRET,
+      { expiresIn: 360000 }, // 100 hours (for dev)
+      (err, token) => {
+        if (err) throw err;
+        res.status(201).json({
+          message: 'User registered successfully!',
+          token,
+          user: { id: user._id, name: user.name, email: user.email }
+        });
+      }
+    );
+
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    console.error(error.message);
+    res.status(500).json({ error: "Server Error" });
   }
 });
 
@@ -57,7 +78,6 @@ router.get('/users', async (req, res) => {
 // LOGIN ROUTE
 router.post('/login', async (req, res) => {
   const { email, password } = req.body;
-
   // Basic validation
   if (!email || !password) {
     return res.status(400).json({ error: "Email and password are required" });
@@ -76,12 +96,28 @@ router.post('/login', async (req, res) => {
       return res.status(400).json({ error: "Invalid email or password" });
     }
 
+
+
     // Successful login
-    res.json({
-      message: "Login successful",
-      user: { id: user._id, name: user.name, email: user.email }
-      // Optionally, add a token here if you implement JWT
-    });
+    const payload = {
+      user: {
+        id: user.id
+      }
+    };
+
+    jwt.sign(
+      payload,
+      process.env.JWT_SECRET,
+      { expiresIn: 360000 },
+      (err, token) => {
+        if (err) throw err;
+        res.json({
+          message: "Login successful",
+          token,
+          user: { id: user._id, name: user.name, email: user.email }
+        });
+      }
+    );
   } catch (error) {
     res.status(500).json({ error: error.message });
   }

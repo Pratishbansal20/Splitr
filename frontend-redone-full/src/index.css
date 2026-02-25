@@ -1,0 +1,69 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Quicksand:wght@300;400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --color-bg-base: #fff0f5; /* Lavender Blush */
+  --color-primary: #ffb7b2; /* Pastel Red/Pink */
+  --color-secondary: #e2f0cb; /* Pastel Green */
+  --color-accent: #c7ceea; /* Pastel Purple */
+  --color-text: #4a4a4a;
+  --color-card: rgba(255, 255, 255, 0.8);
+}
+
+body {
+  margin: 0;
+  font-family: 'Quicksand', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background-color: var(--color-bg-base);
+  background-image: 
+    radial-gradient(at 0% 0%, hsla(253,16%,7%,1) 0, transparent 50%), 
+    radial-gradient(at 50% 0%, hsla(225,39%,30%,1) 0, transparent 50%), 
+    radial-gradient(at 100% 0%, hsla(339,49%,30%,1) 0, transparent 50%);
+  background: linear-gradient(135deg, #fff0f5 0%, #e6e6fa 100%);
+  color: var(--color-text);
+  min-height: 100vh;
+}
+
+code {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
+    monospace;
+}
+
+/* Custom Scrollbar for that cute feel */
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-track {
+  background: transparent; 
+}
+::-webkit-scrollbar-thumb {
+  background: #ffb7b2; 
+  border-radius: 10px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #ff9e99; 
+}
+
+/* Reusable input/button styles using Tailwind @apply (requires Tailwind processing) */
+.input-base {
+  @apply w-full px-4 py-2 rounded-md border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-400;
+}
+
+.btn-primary {
+  @apply inline-flex items-center justify-center px-4 py-2 rounded-md bg-indigo-600 hover:bg-indigo-700 text-white font-medium shadow-sm;
+}
+
+.card {
+  @apply bg-white dark:bg-gray-800 shadow rounded-lg p-6;
+}
+
+.small-muted {
+  @apply text-sm text-gray-500 dark:text-gray-400;
+}
