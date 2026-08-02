@@ -1,0 +1,195 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ==========================================================================
+   Theme tokens
+   Two modes, switched by [data-theme] on <html> (see ThemeContext.js):
+     - "finance" (default): dark ledger/terminal aesthetic
+     - "girly" (secret, Konami code or 5 taps on the logo): pastel fairycore
+   ========================================================================== */
+
+:root,
+:root[data-theme='finance'] {
+  --bg: #08090c;
+  --bg-image: radial-gradient(at 20% 0%, #12141c 0, transparent 55%), radial-gradient(at 100% 0%, #10131a 0, transparent 45%);
+  --surface: #101218;
+  --surface-2: #171a22;
+  --surface-hover: #1c202b;
+  --border: #23262f;
+  --border-soft: #1a1d26;
+  --text: #e7e9ed;
+  --text-dim: #7b8394;
+  --text-faint: #4b5163;
+  --profit: #00e28a;
+  --profit-soft: rgba(0, 226, 138, 0.12);
+  --loss: #ff5470;
+  --loss-soft: rgba(255, 84, 112, 0.12);
+  --accent: #7c5cff;
+  --accent-soft: rgba(124, 92, 255, 0.14);
+  --accent-contrast: #ffffff;
+
+  --font-display: 'Space Grotesk', 'Inter', sans-serif;
+  --font-body: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, Menlo, monospace;
+
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --shadow-card: 0 1px 0 rgba(255, 255, 255, 0.03) inset, 0 8px 24px rgba(0, 0, 0, 0.35);
+}
+
+:root[data-theme='girly'] {
+  --bg: #fff0f5;
+  --bg-image: linear-gradient(135deg, #fff0f5 0%, #f3e8ff 45%, #e6f7ff 100%);
+  --surface: rgba(255, 255, 255, 0.78);
+  --surface-2: rgba(255, 255, 255, 0.92);
+  --surface-hover: rgba(255, 255, 255, 0.95);
+  --border: rgba(255, 255, 255, 0.6);
+  --border-soft: rgba(255, 255, 255, 0.45);
+  --text: #514159;
+  --text-dim: #8b7d94;
+  --text-faint: #b6a8c0;
+  --profit: #34c98f;
+  --profit-soft: rgba(52, 201, 143, 0.14);
+  --loss: #fb7185;
+  --loss-soft: rgba(251, 113, 133, 0.14);
+  --accent: #ec4899;
+  --accent-soft: rgba(236, 72, 153, 0.14);
+  --accent-contrast: #ffffff;
+
+  --font-display: 'Fredoka', 'Quicksand', sans-serif;
+  --font-body: 'Quicksand', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+
+  --radius-sm: 12px;
+  --radius-md: 18px;
+  --radius-lg: 26px;
+  --shadow-card: 0 8px 30px rgba(199, 165, 220, 0.25);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  min-height: 100vh;
+}
+
+body {
+  font-family: var(--font-body);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background-color: var(--bg);
+  background-image: var(--bg-image);
+  background-attachment: fixed;
+  color: var(--text);
+  min-height: 100vh;
+  transition: background-color 0.4s ease, color 0.4s ease;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-display);
+}
+
+code, .font-mono, .money {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Custom scrollbar, themed */
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 10px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--text-faint);
+}
+
+/* Visible keyboard focus ring, themed */
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* ==========================================================================
+   Shared component classes
+   ========================================================================== */
+
+.input-base {
+  @apply w-full px-4 py-2 outline-none transition-colors;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text);
+}
+.input-base::placeholder {
+  color: var(--text-faint);
+}
+.input-base:focus {
+  border-color: var(--accent);
+}
+
+.btn-primary {
+  @apply inline-flex items-center justify-center px-4 py-2 font-medium transition-all;
+  background: var(--accent);
+  color: var(--accent-contrast);
+  border-radius: var(--radius-sm);
+}
+.btn-primary:hover {
+  filter: brightness(1.08);
+}
+.btn-primary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.card {
+  padding: 1.5rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-card);
+}
+
+.small-muted {
+  font-size: 0.875rem;
+  color: var(--text-dim);
+}
+
+/* Uppercase tracked labels are a "ledger terminal" signature — in girly
+   mode, labels read as normal sentence case instead, to match its softer voice. */
+.label-eyebrow {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+}
+:root[data-theme='girly'] .label-eyebrow {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  letter-spacing: normal;
+  text-transform: none;
+}
+
+/* Amount coloring, themed */
+.amount-profit { color: var(--profit); }
+.amount-loss { color: var(--loss); }
+.amount-neutral { color: var(--text-dim); }

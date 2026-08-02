@@ -7,4 +7,6 @@ const GroupSchema = new mongoose.Schema({
   expenses: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Expense' }], // referencing expenses
 }, { timestamps: true });
 
+GroupSchema.index({ members: 1 });
+
 module.exports = mongoose.model('Group', GroupSchema);
